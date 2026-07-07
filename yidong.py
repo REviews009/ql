@@ -1,3 +1,12 @@
+# =====================================================
+# 中国移动云盘 - 青龙单文件版
+# 环境变量:
+# ydyp_ck
+# 格式:
+# Basic XXXXX#手机号#token
+# 多账号使用 @ 分隔
+# =====================================================
+
 # -*- coding=UTF-8 -*-
 # @Project          QL_TimingScript
 # @fileName         中国移动云盘.py
@@ -21,9 +30,22 @@ from datetime import datetime
 import httpx
 import requests
 
-from fn_print import fn_print
-from get_env import get_env
-from sendNotify import send_notification_message_collection
+# ===== 青龙单文件版内置函数 =====
+def fn_print(msg):
+    print(msg)
+
+def get_env(name, split="@"):
+    value = os.getenv(name, "")
+    if not value:
+        return []
+    return value.split(split)
+
+try:
+    from sendNotify import send_notification_message_collection
+except Exception:
+    def send_notification_message_collection(msg):
+        pass
+# ===== 青龙单文件版内置函数结束 =====
 
 ua = "Mozilla/5.0 (Linux; Android 11; M2012K10C Build/RP1A.200720.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/90.0.4430.210 Mobile Safari/537.36 MCloudApp/10.0.1"
 
@@ -139,7 +161,7 @@ class MobileCloudDisk:
                     headers=self.JwtHeaders,
                     cookies=self.cookies
                 )
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 if responses.status_code == 200:
                     responses_data = responses.json()
                     if "result" in responses_data:
