@@ -52,7 +52,7 @@ class _0x3b8a:
 
     def _0x3a4c(self, token):
         try:
-            print(_0xdeb("ICBbK10g8J+UkCDmraPlnKjlkK/liqggRUNESCDlrpXp钥5Y2PllYblr7XpYvpmLLlsIHmj6HmiYsuLi4="))
+            print("  [+] 正在进行ECDH密钥协商...")
             _0x99e1 = ec.generate_private_key(ec.SECP256R1())
             _0x88f2 = _0x99e1.public_key()
             _0x1c7a = _0x88f2.public_bytes(
