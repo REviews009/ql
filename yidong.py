@@ -691,42 +691,42 @@ class MobileCloudDisk:
         end_url = 'https://caiyun.10086.cn/market/signin/hecheng1T/finish?flag=true'
         try:
             game_info_response = await self.client.get(
-            url=game_info_url,
-            headers=self.JwtHeaders,
-            cookies=self.cookies
-        )
-        if game_info_response.status_code == 200:
-            game_info_data = game_info_response.json()
-            if game_info_data and game_info_data.get("code", -1) == 0:
-                curr_num = game_info_data.get("result", {}).get("info", {}).get("curr", 0)
-                count = game_info_data.get("result", {}).get("history", {}).get("0", {}).get("count", '')
-                rank = game_info_data.get("result", {}).get("history", {}).get("0", {}).get("rank", '')
-                fn_print(f"今日剩余游戏次数：{curr_num}\n本月排名：{rank}\n合成次数：{count}")
-                for _ in range(curr_num):
-                    await self.client.get(
-                        url=bigin_url,
-                        headers=self.JwtHeaders,
-                        cookies=self.cookies
-                    )
-                    fn_print("开始游戏， 等待10-15秒完成游戏")
-                    await asyncio.sleep(random.randint(10, 15))
-                    end_response = await self.client.get(
-                        url=end_url,
-                        headers=self.JwtHeaders,
-                        cookies=self.cookies
-                    )
-                    if end_response.status_code == 200:
-                        end_data = end_response.json()
-                        if end_data and end_data.get("code", -1) == 0:
-                            fn_print(f"用户【{self.account}】，===云朵大作战游戏成功✅✅===")
+                url=game_info_url,
+                headers=self.JwtHeaders,
+                cookies=self.cookies
+            )
+            if game_info_response.status_code == 200:
+                game_info_data = game_info_response.json()
+                if game_info_data and game_info_data.get("code", -1) == 0:
+                    curr_num = game_info_data.get("result", {}).get("info", {}).get("curr", 0)
+                    count = game_info_data.get("result", {}).get("history", {}).get("0", {}).get("count", '')
+                    rank = game_info_data.get("result", {}).get("history", {}).get("0", {}).get("rank", '')
+                    fn_print(f"今日剩余游戏次数：{curr_num}\n本月排名：{rank}\n合成次数：{count}")
+                    for _ in range(curr_num):
+                        await self.client.get(
+                            url=bigin_url,
+                            headers=self.JwtHeaders,
+                            cookies=self.cookies
+                        )
+                        fn_print("开始游戏， 等待10-15秒完成游戏")
+                        await asyncio.sleep(random.randint(10, 15))
+                        end_response = await self.client.get(
+                            url=end_url,
+                            headers=self.JwtHeaders,
+                            cookies=self.cookies
+                        )
+                        if end_response.status_code == 200:
+                            end_data = end_response.json()
+                            if end_data and end_data.get("code", -1) == 0:
+                                fn_print(f"用户【{self.account}】，===云朵大作战游戏成功✅✅===")
+                            else:
+                                fn_print(f"用户【{self.account}】，===云朵大作战游戏失败❌===")
                         else:
-                            fn_print(f"用户【{self.account}】，===云朵大作战游戏失败❌===")
-                    else:
-                        fn_print(f"用户【{self.account}】，===获取云朵大作战游戏信息失败❌===")
+                            fn_print(f"用户【{self.account}】，===获取云朵大作战游戏信息失败❌===")
+                else:
+                    fn_print(f"用户【{self.account}】，===获取云朵大作战游戏信息失败❌===")
             else:
-                fn_print(f"用户【{self.account}】，===获取云朵大作战游戏信息失败❌===")
-        else:
-            fn_print(f"云朵大作战请求发生异常：{game_info_response.status_code}")
+                fn_print(f"云朵大作战请求发生异常：{game_info_response.status_code}")
         except Exception as e:
             fn_print(f"云朵大作战执行异常：{e}")
 
@@ -737,6 +737,7 @@ class MobileCloudDisk:
         """
         recevice_url = "https://caiyun.10086.cn/market/signin/page/receive"
         prize_url = f"https://caiyun.10086.cn/market/prizeApi/checkPrize/getUserPrizeLogPage?currPage=1&pageSize=15&_={self.timestamp}"
+        receive_data = {}
         receive_response = await self.client.get(
             url=recevice_url,
             headers=self.JwtHeaders,
@@ -745,9 +746,6 @@ class MobileCloudDisk:
         if receive_response.status_code == 200:
             receive_data = receive_response.json()
             await self.rm_sleep()
-        else:
-            fn_print(f"领取云朵请求发生异常：{receive_response.status_code}")
-        receive_data = {}
         else:
             fn_print(f"领取云朵请求发生异常：{receive_response.status_code}")
             return
@@ -772,7 +770,6 @@ class MobileCloudDisk:
             fn_print(f"用户【{self.account}】，===云朵数量：{total_amout}个，{rewards}===")
         else:
             fn_print(f"领取奖品请求发生异常：{prize_response.status_code}")
-
     async def backup_cloud(self):
         """
         备份云朵
