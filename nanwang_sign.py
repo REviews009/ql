@@ -3,6 +3,11 @@
 """
 南网在线自动签到脚本 v2.3（通知修复版）
 青龙面板适用
+
+环境变量:
+    NANWANG_TOKEN - x-auth-token 值（必填）
+    NANWANG_COOKIE - Cookie字符串（备用，可选）
+    
 """
 
 import os
