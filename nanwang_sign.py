@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-南网在线自动签到脚本 v2.2（通知修复版）
+南网在线自动签到脚本 v2.3（通知修复版）
 青龙面板适用
-
-环境变量:
-    NANWANG_TOKEN - x-auth-token 值（必填）
-    NANWANG_COOKIE - Cookie字符串（备用，可选）
 """
 
 import os
@@ -14,16 +10,18 @@ import sys
 import json
 import time
 import requests
+import subprocess
 from datetime import datetime
 
-# ============ 配置 ============
 BASE_URL = "https://95598.csg.cn"
 UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/20A362 Ariver/1.0.15 NWZX/Portal Nebula WK WK RVKType(0) NebulaX/1.0.0"
 TASK_ID = "654165b1z56x1bq1"
 
-# ============ 通知 ============
 def send_notify(title, content):
     """调用青龙通知"""
+    print(f"\n   [正在发送通知] {title}")
+
+    # 方式1: 写入临时JS文件执行
     try:
         notify_dir = "/ql/data/scripts"
         if not os.path.exists(os.path.join(notify_dir, "sendNotify.js")):
@@ -31,20 +29,62 @@ def send_notify(title, content):
 
         notify_path = os.path.join(notify_dir, "sendNotify.js")
         if os.path.exists(notify_path):
-            import subprocess
-            js_code = (
-                'const { sendNotify } = require("./sendNotify"); '
-                f'sendNotify("{title}", "{content}").catch(e => console.error("通知失败:", e.message));'
-            )
-            cmd = f'cd "{notify_dir}" && node -e "{js_code}"'
-            subprocess.run(cmd, shell=True, capture_output=True)
-            print(f"   [通知已发送] {title}")
-        else:
-            print(f"   [通知跳过] sendNotify.js 不存在: {notify_path}")
-    except Exception as e:
-        print(f"   [通知失败] {e}")
+            tmp_js = os.path.join(notify_dir, "_nanwang_notify_tmp.js")
 
-# ============ 南网签到类 ============
+            # 使用字符串拼接避免引号冲突
+            lines = [
+                'const { sendNotify } = require("./sendNotify");',
+                '(async () => {',
+                '    await sendNotify("' + title + '", "' + content + '");',
+                '    process.exit(0);',
+                '})();',
+            ]
+            with open(tmp_js, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines))
+
+            result = subprocess.run(
+                ["node", tmp_js],
+                cwd=notify_dir,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+
+            try:
+                os.remove(tmp_js)
+            except:
+                pass
+
+            if result.returncode == 0:
+                print(f"   [通知发送成功] 通过 sendNotify.js")
+                return
+            else:
+                print(f"   [sendNotify 错误] {result.stderr[:200]}")
+        else:
+            print(f"   [sendNotify.js 不存在] {notify_path}")
+    except Exception as e:
+        print(f"   [sendNotify 异常] {e}")
+
+    # 方式2: Python notify 模块
+    try:
+        sys.path.insert(0, "/ql/data/scripts")
+        sys.path.insert(0, "/ql/scripts")
+        from notify import send
+        send(title, content)
+        print(f"   [通知发送成功] 通过 Python notify")
+        return
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"   [Python notify 异常] {e}")
+
+    # 方式3: 兜底打印
+    print(f"\n{'='*60}")
+    print(f"[通知内容 - 请检查青龙通知配置]")
+    print(f"标题: {title}")
+    print(f"内容: {content}")
+    print(f"{'='*60}")
+
 class NanWangSign:
     def __init__(self, token, cookie=None):
         self.token = token
@@ -80,10 +120,6 @@ class NanWangSign:
                 print(f"   [Cookie更新] CAMSID={new_camsid}")
 
             return resp.json()
-        except requests.exceptions.Timeout:
-            return {"sta": "-1", "message": "请求超时"}
-        except requests.exceptions.ConnectionError:
-            return {"sta": "-1", "message": "连接失败"}
         except Exception as e:
             return {"sta": "-1", "message": f"请求异常: {e}"}
 
@@ -115,10 +151,9 @@ class NanWangSign:
         url = f"{BASE_URL}/mp/w2/szfw-points-txhsj/taskInfo/signOperate"
         return self._request("POST", url, {"taskId": TASK_ID, "thisGainPoints": 1})
 
-# ============ 主程序 ============
 def main():
     print("=" * 60)
-    print("     南网在线自动签到脚本 v2.2")
+    print("     南网在线自动签到脚本 v2.3")
     print("=" * 60)
 
     token = os.environ.get("NANWANG_TOKEN", "").strip()
@@ -137,7 +172,6 @@ def main():
 
     signer = NanWangSign(token, cookie)
 
-    # 查询账户
     print("\n[1/3] 查询账户信息...")
     account = signer.check_account()
     if not account:
@@ -150,7 +184,6 @@ def main():
     print(f"   可用积分: {account['grantPoints']}")
     print(f"   冻结积分: {account['freezePoints']}")
 
-    # 查询签到状态
     print("\n[2/3] 查询签到状态...")
     sign_info = signer.get_sign_list()
     if not sign_info:
@@ -159,11 +192,8 @@ def main():
         send_notify("南网在线签到失败", msg)
         sys.exit(1)
 
-    # 已签到场景
     if sign_info["finished"]:
         print(f"   今日({today})已签到，连续 {sign_info['singCount']} 天")
-
-        # 重新查询最新积分
         account = signer.check_account()
         points = account["grantPoints"] if account else "未知"
 
@@ -173,7 +203,6 @@ def main():
         send_notify(title, content)
         sys.exit(0)
 
-    # 执行签到
     print(f"\n[3/3] 执行签到...")
     result = signer.do_sign()
 
@@ -193,7 +222,6 @@ def main():
     else:
         msg = f"签到失败: {result.get('message', '未知错误')}"
         print(msg)
-        print(f"   响应: {json.dumps(result, ensure_ascii=False)}")
         send_notify(f"南网在线签到失败 [{today}]", msg)
         sys.exit(1)
 
