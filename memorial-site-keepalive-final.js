@@ -142,8 +142,8 @@ async function main() {
 
         log('正在访问目标网站...');
         const response = await page.goto(CONFIG.url, {
-            waitUntil: 'networkidle',
-            timeout: CONFIG.navigationTimeout,
+              waitUntil: 'domcontentloaded',  // ← 从 'networkidle' 改过来
+             timeout: 30000                   // ← 建议改小，或者写 CONFIG.navigationTimeout
         });
 
         log('页面加载完成，状态码: ' + response.status());
