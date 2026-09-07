@@ -3,6 +3,27 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+
+// ==================== 自动安装 Chromium ====================
+console.log('🔍 检查 Chromium 环境...');
+try {
+    try {
+        execSync('chromium-browser --version', { stdio: 'pipe' });
+        console.log('✅ Chromium 已安装，跳过安装步骤');
+    } catch (checkErr) {
+        console.log('📦 Chromium 未安装，正在自动安装（约需1-3分钟）...');
+        execSync('apk add --no-cache chromium chromium-chromedriver', { 
+            stdio: 'inherit',
+            timeout: 600000
+        });
+        console.log('✅ Chromium 安装完成');
+    }
+} catch (err) {
+    console.error('❌ Chromium 环境准备失败:', err.message);
+    process.exit(1);
+}
+// ========================================================
 
 const CONFIG = {
     url: 'https://reviews009.github.io/memorial-site/',
@@ -17,6 +38,8 @@ const CONFIG = {
     screenshotKeepDays: 3,
     chromiumPath: '/usr/bin/chromium-browser',
 };
+
+// ... 后面你的原有代码保持不变
 
 function sendNotify(title, content) {
     try {
