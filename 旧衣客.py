@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-¾ÉÒÂ¿Í»ØÊÕ£¨jyk.scjyx.com£©Ã¿ÈÕ×Ô¶¯Ç©µ½£¨Token Ö±ÓÃ°æ£©
-Ö§³ÖÆÕÍ¨Ç©µ½ + ¹ã¸æÇ©µ½ + ²¹Ç©£¨ÆÕÍ¨²¹Ç© + ¹ã¸æ²¹Ç©£©
-
-»·¾³±äÁ¿ JYK_TOKENS£º
-    µ¥ÕËºÅ£ºtoken »ò token#±¸×¢
-    ¶àÕËºÅ£ºtoken1#±¸×¢1&token2#±¸×¢2£¬Ò²Ö§³Ö»»ĞĞ·Ö¸ô
-    ¿ÉÖ±½ÓÕ³Ìù Bearer token£¬½Å±¾»á×Ô¶¯È¥µô Bearer Ç°×º
+æ—§è¡£å®¢ï¼ˆjyk.scjyx.comï¼‰è‡ªåŠ¨ç­¾åˆ°è„šæœ¬
+åŒ…å«ï¼šæ¯æ—¥ç­¾åˆ° + è¡¥ç­¾ + çœ‹å¹¿å‘Šç­¾åˆ°ï¼ˆå¾ªç¯ï¼‰
+ç¯å¢ƒå˜é‡ JYK_TOKENSï¼š
+    å¤šä¸ªè´¦å·ç”¨ & åˆ†éš”ï¼Œæ¯ä¸ªè´¦å·ç”¨ token#å¤‡æ³¨ å½¢å¼
+    ä¾‹å¦‚ï¼štoken1#å¤‡æ³¨1&token2#å¤‡æ³¨2
+    è‡ªåŠ¨å»é™¤ Bearer å‰ç¼€
 """
 
 import json
@@ -18,7 +17,7 @@ import time
 import urllib.request
 from datetime import datetime
 
-# ---------- ¿ØÖÆÌ¨Êä³ö±àÂë & Ç¿ÖÆË¢ĞÂ ----------
+# ---------- ç¼–ç  & æ—¥å¿— ----------
 try:
     sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 except Exception:
@@ -30,7 +29,7 @@ except Exception:
 def log(msg, end="\n"):
     print(msg, end=end, flush=True)
 
-# ---------- ÅäÖÃ ----------
+# ---------- å¸¸é‡ ----------
 PUSH_PLUS_TOKEN = os.environ.get("PUSH_PLUS_TOKEN", "").strip()
 
 JYK_BASE_URL = "https://jyk.scjyx.com"
@@ -41,7 +40,7 @@ AD_VIEW_MIN, AD_VIEW_MAX = 45, 60
 AD_GAP_MIN, AD_GAP_MAX = 20, 40
 ACCOUNT_GAP_MIN, ACCOUNT_GAP_MAX = 5, 15
 
-# ---------- ½âÎö JYK_TOKENS ----------
+# ---------- è§£æ JYK_TOKENS ----------
 def normalize_token(token):
     token = token.strip()
     if token.lower().startswith("bearer "):
@@ -69,18 +68,18 @@ def parse_tokens(raw):
                 token = normalize_token(item)
                 remark = ""
             if token:
-                parts.append((token, remark or f"ÕËºÅ{len(parts) + 1}"))
+                parts.append((token, remark or f"è´¦å·{len(parts) + 1}"))
     return parts
 
 
 TOKENS_RAW = os.environ.get("JYK_TOKENS", "").strip()
 ACCOUNTS = parse_tokens(TOKENS_RAW)
 if not ACCOUNTS:
-    log("? Î´ÅäÖÃ»·¾³±äÁ¿ JYK_TOKENS£¬ÇëÉèÖÃ£¨¶àÕËºÅÓÃ & »ò»»ĞĞ·Ö¸ô£©")
-    log("¸ñÊ½: token1#±¸×¢1&token2#±¸×¢2")
+    log("âŒ æœªæ£€æµ‹åˆ°æœ‰æ•ˆçš„ JYK_TOKENS ç¯å¢ƒå˜é‡ï¼Œè¯·é…ç½®åå†è¿è¡Œ")
+    log("ç¤ºä¾‹: token1#å¤‡æ³¨1&token2#å¤‡æ³¨2")
     sys.exit(1)
 
-log(f"? ¶ÁÈ¡µ½ {len(ACCOUNTS)} ¸öÕËºÅ")
+log(f"âœ… å·²åŠ è½½ {len(ACCOUNTS)} ä¸ªè´¦å·")
 
 # ---------- User-Agent ----------
 def get_user_agent():
@@ -97,7 +96,7 @@ COMMON_HEADERS = {
     "User-Agent": get_user_agent(),
 }
 
-# ---------- ¾ÉÒÂ¿Í API ÇëÇó ----------
+# ---------- è¯·æ±‚ API ----------
 def api_request(token, path, method="GET", body=None):
     url = JYK_BASE_URL + path
     headers = dict(COMMON_HEADERS)
@@ -112,24 +111,24 @@ def api_request(token, path, method="GET", body=None):
     except Exception as e:
         return {"errno": -1, "message": str(e)}
 
-# ---------- Token Ğ£Ñé ----------
+# ---------- Token æ ¡éªŒ ----------
 def get_valid_token(token, account_label):
-    log(f"?? [{account_label}] ÕıÔÚÑéÖ¤ token...")
+    log(f"ğŸ” [{account_label}] æ­£åœ¨æ ¡éªŒ token...")
     resp = api_request(token, "/api/user/getInfo")
     if resp.get("errno") == 0:
-        log(f"? [{account_label}] token ÓĞĞ§")
+        log(f"âœ… [{account_label}] token æœ‰æ•ˆ")
         return token
 
-    message = resp.get("message") or "Î´Öª´íÎó"
-    log(f"? [{account_label}] token ÎŞĞ§¡¢ÒÑ¹ıÆÚ»òÑéÖ¤Ê§°Ü: {message}")
+    message = resp.get("message") or "æœªçŸ¥é”™è¯¯"
+    log(f"âŒ [{account_label}] token æ— æ•ˆæˆ–å·²è¿‡æœŸï¼Œè¯·é‡æ–°è·å–: {message}")
     return None
 
-# ---------- Ç©µ½º¯Êı ----------
+# ---------- ç­¾åˆ°ç›¸å…³ ----------
 def checkin_home(token):
     return api_request(token, "/api/checkin/home")
 
 def checkin_sign(token, sign_type=1):
-    """Ö´ĞĞÇ©µ½£¨ÆÕÍ¨»ò²¹Ç©£©£¬sign_type=1ÆÕÍ¨£¬2¹ã¸æ£¨¹ã¸æĞè¶îÍâad_token£©"""
+    """æ™®é€šç­¾åˆ°/è¡¥ç­¾ï¼Œsign_type=1 æ™®é€šç­¾åˆ°ï¼Œ2 çœ‹å¹¿å‘Šç­¾åˆ°ï¼ˆéœ€å…ˆå– ad_tokenï¼‰"""
     return api_request(token, "/api/checkin/sign", method="POST", body={"sign_type": sign_type})
 
 def ad_prepare(token):
@@ -138,114 +137,114 @@ def ad_prepare(token):
 def ad_sign(token, ad_token):
     return api_request(token, "/api/checkin/ad/sign", method="POST", body={"ad_token": ad_token})
 
-# ---------- ºËĞÄÇ©µ½Âß¼­£¨º¬²¹Ç©£© ----------
+# ---------- æ™®é€šç­¾åˆ° & è¡¥ç­¾ ----------
 def do_checkin(token, account_label):
     """
-    Ö´ĞĞÆÕÍ¨Ç©µ½ + ÆÕÍ¨²¹Ç©£¨µ±½ñÈÕÒÑÇ©ÇÒ¿É²¹Ç©Ê±£©
-    ·µ»ØÈÕÖ¾ÁĞ±í
+    æ™®é€šç­¾åˆ° + è¡¥ç­¾ï¼ˆè‹¥ä»Šæ—¥å·²ç­¾åˆ™æ£€æŸ¥æ˜¯å¦å¯è¡¥ç­¾ï¼‰
+    è¿”å›æ—¥å¿—åˆ—è¡¨
     """
     logs = []
-    log(f"?? [{account_label}] ²éÑ¯Ç©µ½×´Ì¬...")
+    log(f"ğŸ“… [{account_label}] å¼€å§‹æŸ¥è¯¢ç­¾åˆ°çŠ¶æ€...")
     home = checkin_home(token)
     if home.get("errno") != 0:
-        logs.append(f"?? ²éÑ¯Ç©µ½×´Ì¬Ê§°Ü: {home.get('message')}")
+        logs.append(f"âŒ æŸ¥è¯¢ç­¾åˆ°çŠ¶æ€å¤±è´¥: {home.get('message')}")
         return logs
     data = home.get("data") or {}
     if not data.get("enabled"):
-        logs.append("? Ç©µ½¹¦ÄÜÎ´¿ªÆô")
+        logs.append("âš ï¸ ç­¾åˆ°åŠŸèƒ½æœªå¯ç”¨")
         return logs
 
     integral = data.get("integral", "?")
     streak = data.get("streak_days", 0)
 
-    # ´¦ÀíÆÕÍ¨Ç©µ½£¨½ñÈÕÎ´Ç©£©
+    # ä»Šæ—¥æœªç­¾åˆ°
     if not data.get("today_signed"):
         if not data.get("can_sign"):
-            logs.append(f"?? µ±Ç°²»¿ÉÇ©µ½£¨»ı·Ö {integral}£¬Á¬Ğø {streak} Ìì£©")
+            logs.append(f"â„¹ï¸ å½“å‰ä¸å¯ç­¾åˆ°ï¼Œç§¯åˆ† {integral}ï¼Œè¿ç»­ {streak} å¤©")
             return logs
-        log(f"?? [{account_label}] Ö´ĞĞÇ©µ½...")
+        log(f"âœï¸ [{account_label}] æ­£åœ¨ç­¾åˆ°...")
         time.sleep(1)
         sign = checkin_sign(token, sign_type=1)
         if sign.get("errno") != 0:
-            logs.append(f"? Ç©µ½Ê§°Ü: {sign.get('message')}")
+            logs.append(f"âŒ ç­¾åˆ°å¤±è´¥: {sign.get('message')}")
             return logs
         sdata = sign.get("data") or {}
         reward = sdata.get("reward") or {}
         snapshot = sdata.get("snapshot") or {}
         amount = reward.get("amount", "?")
-        reward_text = reward.get("reward_type_text", "»ı·Ö")
+        reward_text = reward.get("reward_type_text", "ç§¯åˆ†")
         tip = sdata.get("success_tip", "")
         new_streak = snapshot.get("streak_days", streak)
-        logs.append(f"?? {tip} ½±Àø +{amount}{reward_text}£¬Á¬Ğø {new_streak} Ìì")
+        logs.append(f"âœ… {tip} è·å¾— +{amount}{reward_text}ï¼Œè¿ç»­ {new_streak} å¤©")
     else:
-        # ½ñÈÕÒÑÇ©£¬¼ì²é²¹Ç©
+        # ä»Šæ—¥å·²ç­¾ï¼Œå°è¯•è¡¥ç­¾
         if data.get("can_makeup") and data.get("makeup_remain_today", 0) > 0:
-            log(f"?? [{account_label}] ·¢ÏÖ¿É²¹Ç©£¬Ö´ĞĞÆÕÍ¨²¹Ç©...")
+            log(f"ğŸ©¹ [{account_label}] æ£€æµ‹åˆ°å¯è¡¥ç­¾ï¼Œæ­£åœ¨è¡¥ç­¾...")
             time.sleep(1)
-            sign = checkin_sign(token, sign_type=1)  # ²¹Ç©Ò²ÓÃÏàÍ¬½Ó¿Ú
+            sign = checkin_sign(token, sign_type=1)  # è¡¥ç­¾ä¹Ÿèµ°æ™®é€šç­¾åˆ°æ¥å£
             if sign.get("errno") != 0:
-                logs.append(f"? ²¹Ç©Ê§°Ü: {sign.get('message')}")
+                logs.append(f"âŒ è¡¥ç­¾å¤±è´¥: {sign.get('message')}")
                 return logs
             sdata = sign.get("data") or {}
             reward = sdata.get("reward") or {}
             snapshot = sdata.get("snapshot") or {}
             amount = reward.get("amount", "?")
-            reward_text = reward.get("reward_type_text", "»ı·Ö")
+            reward_text = reward.get("reward_type_text", "ç§¯åˆ†")
             tip = sdata.get("success_tip", "")
             new_streak = snapshot.get("streak_days", streak)
-            logs.append(f"?? ²¹Ç©³É¹¦£¡{tip} ½±Àø +{amount}{reward_text}£¬Á¬Ğø {new_streak} Ìì")
+            logs.append(f"âœ… è¡¥ç­¾æˆåŠŸï¼Œ{tip} è·å¾— +{amount}{reward_text}ï¼Œè¿ç»­ {new_streak} å¤©")
         else:
-            logs.append(f"? ½ñÈÕÒÑÇ©µ½£¬ÎŞĞèÖØ¸´£¨»ı·Ö {integral}£¬Á¬Ğø {streak} Ìì£©")
+            logs.append(f"â„¹ï¸ ä»Šæ—¥å·²ç­¾åˆ°ï¼Œç§¯åˆ† {integral}ï¼Œè¿ç»­ {streak} å¤©")
 
     return logs
 
 def do_ad_checkin(token, account_label, max_times=None):
     """
-    ¹ã¸æÇ©µ½£¨°üÀ¨¹ã¸æ²¹Ç©£¬Ö»Òª need_ad Îª True ¾Í»áÖ´ĞĞ£©
+    å¾ªç¯çœ‹å¹¿å‘Šç­¾åˆ°ï¼Œç›´åˆ° need_ad ä¸º False æˆ–è¾¾åˆ° max_times
     """
     logs = []
     done = 0
     while max_times is None or done < max_times:
         prep = ad_prepare(token)
         if prep.get("errno") != 0:
-            logs.append(f"?? ¹ã¸æÇ©µ½×¼±¸Ê§°Ü: {prep.get('message')}")
+            logs.append(f"âŒ å¹¿å‘Šç­¾åˆ°å‡†å¤‡å¤±è´¥: {prep.get('message')}")
             break
         data = prep.get("data") or {}
         if not data.get("need_ad") or not data.get("ad_enabled"):
-            logs.append("?? ¹ã¸æÇ©µ½Î´¿ªÆô£¬Ìø¹ı")
+            logs.append("â„¹ï¸ å¹¿å‘Šç­¾åˆ°å·²å®Œæˆæˆ–æœªå¼€å¯")
             break
         view_secs = random.randint(AD_VIEW_MIN, AD_VIEW_MAX)
-        log(f"?? [{account_label}] Ä£Äâ¹Û¿´¹ã¸æ ({view_secs}s)...")
+        log(f"ğŸ“º [{account_label}] æ¨¡æ‹Ÿè§‚çœ‹å¹¿å‘Š ({view_secs}s)...")
         time.sleep(view_secs)
         res = ad_sign(token, data.get("ad_token", ""))
         if res.get("errno") != 0:
             fail = (res.get("data") or {}).get("fail_tip") or res.get("message", "")
-            logs.append(f"? ¹ã¸æÇ©µ½Ê§°Ü: {fail}")
+            logs.append(f"âŒ å¹¿å‘Šç­¾åˆ°å¤±è´¥: {fail}")
             break
         sdata = res.get("data") or {}
         reward = sdata.get("reward") or {}
         snapshot = sdata.get("snapshot") or {}
         done += 1
         logs.append(
-            f"?? ¹ã¸æÇ©µ½ µÚ{reward.get('times_index', '?')}´Î"
-            f" +{reward.get('amount', '?')}{reward.get('reward_type_text', '»ı·Ö')}"
-            f"£¨½ñÈÕ {snapshot.get('today_count', '?')}/{snapshot.get('daily_limit', '?')} ´Î£©"
+            f"âœ… å¹¿å‘Šç­¾åˆ° ç¬¬{reward.get('times_index', '?')}æ¬¡"
+            f" +{reward.get('amount', '?')}{reward.get('reward_type_text', 'ç§¯åˆ†')}"
+            f"ï¼Œä»Šæ—¥ {snapshot.get('today_count', '?')}/{snapshot.get('daily_limit', '?')} æ¬¡"
         )
         today = snapshot.get("today_count", 0)
         limit = snapshot.get("daily_limit", 0)
         if limit and today >= limit:
-            logs.append("?? ½ñÈÕ¹ã¸æÇ©µ½´ÎÊıÒÑÂú")
+            logs.append("â„¹ï¸ ä»Šæ—¥å¹¿å‘Šç­¾åˆ°å·²è¾¾ä¸Šé™")
             break
         if max_times is not None and done >= max_times:
             break
         gap = random.randint(AD_GAP_MIN, AD_GAP_MAX)
-        log(f"? [{account_label}] µÈ´ı {gap}s ºó½øĞĞÏÂÒ»´Î¹ã¸æÇ©µ½...")
+        log(f"â³ [{account_label}] ç­‰å¾… {gap}s åè¿›è¡Œä¸‹ä¸€æ¬¡å¹¿å‘Šç­¾åˆ°...")
         time.sleep(gap)
     if done == 0 and not logs:
-        logs.append("?? ¹ã¸æÇ©µ½Î´Ö´ĞĞ")
+        logs.append("â„¹ï¸ å¹¿å‘Šç­¾åˆ°æœªæ‰§è¡Œ")
     return logs
 
-# ---------- ÍÆËÍ ----------
+# ---------- é€šçŸ¥ ----------
 def send_notify(title, content):
     if PUSH_PLUS_TOKEN:
         try:
@@ -254,9 +253,9 @@ def send_notify(title, content):
                                          headers={"Content-Type": "application/json"}, method="POST")
             with urllib.request.urlopen(req, timeout=10) as resp:
                 pass
-            log("? PushPlus ÍÆËÍ³É¹¦")
+            log("âœ… PushPlus æ¨é€æˆåŠŸ")
         except Exception as e:
-            log(f"?? PushPlus ÍÆËÍÊ§°Ü: {e}")
+            log(f"âŒ PushPlus æ¨é€å¤±è´¥: {e}")
     else:
         try:
             from notify import send
@@ -265,9 +264,9 @@ def send_notify(title, content):
             pass
 
 def account_succeeded(logs):
-    return any(m in line for line in logs for m in ("??", "?", "??", "??"))
+    return any(m in line for line in logs for m in ("âœ…", "â„¹ï¸", "âš ï¸", "ğŸ©¹"))
 
-# ---------- Ö÷³ÌĞò ----------
+# ---------- ä¸»æµç¨‹ ----------
 def main():
     max_times = None
     raw_times = os.environ.get("JYK_AD_TIMES", "").strip()
@@ -275,21 +274,21 @@ def main():
         try:
             max_times = int(raw_times)
         except ValueError:
-            log(f"?? JYK_AD_TIMES ÎŞĞ§£¬ºöÂÔ")
+            log("âš ï¸ JYK_AD_TIMES ä¸æ˜¯æœ‰æ•ˆæ•´æ•°ï¼Œå·²å¿½ç•¥")
 
     results = []
     for idx, (token, remark) in enumerate(ACCOUNTS, 1):
-        prefix = f"ÕËºÅ{idx} ({remark})"
-        log(f"\n===== ¾ÉÒÂ¿ÍÇ©µ½ - {prefix} =====")
+        prefix = f"è´¦å·{idx} ({remark})"
+        log(f"\n===== å¼€å§‹æ‰§è¡Œ - {prefix} =====")
         token = get_valid_token(token, prefix)
         if not token:
-            results.append({"remark": remark, "success": False, "error": "token ÎŞĞ§¡¢ÒÑ¹ıÆÚ»òÑéÖ¤Ê§°Ü"})
+            results.append({"remark": remark, "success": False, "error": "token æ— æ•ˆæˆ–å·²è¿‡æœŸï¼Œè¯·é‡æ–°è·å–"})
             continue
 
-        # 1. ÆÕÍ¨Ç©µ½ + ÆÕÍ¨²¹Ç©
+        # 1. æ™®é€šç­¾åˆ° + è¡¥ç­¾
         logs = do_checkin(token, prefix)
 
-        # 2. ¹ã¸æÇ©µ½£¨º¬¹ã¸æ²¹Ç©£©
+        # 2. å¹¿å‘Šç­¾åˆ°å¾ªç¯
         logs += do_ad_checkin(token, prefix, max_times=max_times)
 
         for line in logs:
@@ -299,35 +298,35 @@ def main():
             "remark": remark,
             "success": success,
             "logs": logs,
-            "error": "" if success else "Ç©µ½Î´³É¹¦"
+            "error": "" if success else "ç­¾åˆ°æœªæˆåŠŸ"
         })
 
         if idx < len(ACCOUNTS):
             gap = random.randint(ACCOUNT_GAP_MIN, ACCOUNT_GAP_MAX)
-            log(f"[{prefix}] ? µÈ´ı {gap} Ãëºó´¦ÀíÏÂÒ»ÕËºÅ...")
+            log(f"[{prefix}] â³ ç­‰å¾… {gap} ç§’ååˆ‡æ¢ä¸‹ä¸€ä¸ªè´¦å·...")
             time.sleep(gap)
 
-    # »ã×ÜÍÆËÍ
+    # æ±‡æ€»
     success_count = sum(1 for r in results if r["success"])
     fail_count = len(results) - success_count
     lines = [
-        "?? ¾ÉÒÂ¿ÍÇ©µ½½á¹û",
-        "©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥",
-        f"? ³É¹¦: {success_count}  |  ? Ê§°Ü: {fail_count}",
-        f"?? Ê±¼ä: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-        "©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥"
+        "ğŸ“Š æ—§è¡£å®¢ç­¾åˆ°ç»“æœæ±‡æ€»",
+        "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€",
+        f"âœ… æˆåŠŸ: {success_count}  |  âŒ å¤±è´¥: {fail_count}",
+        f"ğŸ•’ æ—¶é—´: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€"
     ]
     for r in results:
-        icon = "?" if r["success"] else "?"
+        icon = "âœ…" if r["success"] else "âŒ"
         lines.append(f"\n{icon} {r['remark']}")
         if r["success"]:
             for line in r["logs"]:
                 lines.append("  " + line)
         else:
-            lines.append(f"  Ê§°Ü: {r['error']}")
+            lines.append(f"  å¤±è´¥: {r['error']}")
     summary = "\n".join(lines)
     log("\n" + summary)
-    send_notify("?? ¾ÉÒÂ¿ÍÇ©µ½ÈÎÎñÍê³É", summary)
+    send_notify("ğŸ“Š æ—§è¡£å®¢ç­¾åˆ°ç»“æœæ±‡æ€»", summary)
 
 if __name__ == "__main__":
     main()
